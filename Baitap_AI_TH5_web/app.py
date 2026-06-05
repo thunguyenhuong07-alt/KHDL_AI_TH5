@@ -4,7 +4,7 @@ import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-from models import (load_data, prepare_data, train_and_evaluate,
+from Baitap_AI_TH5_web.models import (load_data, prepare_data, train_and_evaluate,
     get_feature_importance, compute_roc_curves, FEATURE_COLS, VN_NAMES, STATUS_LABELS, STATUS_MAP)
 from styles import CSS_STYLE, PLOTLY_LAYOUT, COLORS, MODEL_COLORS
 
