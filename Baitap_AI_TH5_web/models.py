@@ -38,7 +38,7 @@ def _create_labels(row):
 
 def load_data():
     base_dir = Path(__file__).resolve().parent
-    data_path = base_dir / 'Baitap_AI_TH5_web' / 'Financial Statement Anomaly Dataset.csv' / 'financial_anomaly_data.csv'
+    data_path = base_dir / 'Financial Statement Anomaly Dataset.csv' / 'financial_anomaly_data.csv'
     df = pd.read_csv(data_path)
     # Loại bỏ các hàng chứa giá trị thiếu trong các cột dùng cho huấn luyện
     df = df.dropna(subset=['Amount', 'TransactionType', 'Location', 'Merchant']).reset_index(drop=True)
