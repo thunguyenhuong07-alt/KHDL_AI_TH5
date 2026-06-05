@@ -1,31 +1,53 @@
+import io
+
 import pandas as pd
+import streamlit as st
 from sklearn.ensemble import IsolationForest
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+st.title("Phân tích dữ liệu gian lận bằng Isolation Forest")
+
+@st.cache_data
+def load_data():
+    return pd.read_csv('AIML Dataset.csv')
+
 # 1. Đọc dữ liệu từ file bạn đã giải nén
-df = pd.read_csv('AIML Dataset.csv')
+df = load_data()
 
 # 2. Xem thông tin cơ bản (EDA)
-print("Thông tin bộ dữ liệu:")
-print(df.info())
-print("\nThống kê mô tả:")
-print(df.describe())
+st.subheader("Thông tin bộ dữ liệu")
+info_buf = io.StringIO()
+df.info(buf=info_buf)
+st.text(info_buf.getvalue())
+
+st.subheader("Thống kê mô tả")
+st.write(df.describe())
+
+st.subheader("Bảng mẫu dữ liệu")
+st.write(df.head())
 
 # 3. Sử dụng Isolation Forest để gán nhãn gian lận
 # Giả sử tỷ lệ gian lận dự kiến là 2% (0.02)
 model = IsolationForest(contamination=0.02, random_state=42)
-# Chọn các cột số để phân tích (ví dụ: amount, oldbalance, newbalance)
-# Lưu ý: Thay đổi tên cột cho đúng với file .csv của bạn
-features = df.select_dtypes(include=['float64', 'int64']).columns
-df['anomaly'] = model.fit_predict(df[features])
+# Chọn các cột số để phân tích
+types = ['float64', 'int64']
+features = df.select_dtypes(include=types).columns.tolist()
 
-# Nhãn -1 là bất thường (nghi ngờ gian lận)
-anomalies = df[df['anomaly'] == -1]
-print(f"\nSố lượng giao dịch nghi ngờ gian lận: {len(anomalies)}")
+if len(features) < 2:
+    st.error("Không tìm thấy đủ cột số để vẽ biểu đồ. Vui lòng kiểm tra lại dữ liệu.")
+else:
+    df['anomaly'] = model.fit_predict(df[features])
+    anomalies = df[df['anomaly'] == -1]
 
-# 4. Trực quan hóa (Vẽ biểu đồ)
-plt.figure(figsize=(10, 6))
-sns.scatterplot(data=df.sample(1000), x=features[0], y=features[1], hue='anomaly', palette='coolwarm')
-plt.title("Phân tích điểm bất thường trong giao dịch")
-plt.show()
+    st.subheader("Kết quả phát hiện bất thường")
+    st.write(f"Số lượng giao dịch nghi ngờ gian lận: {len(anomalies)}")
+    st.write(anomalies.head(20))
+
+    st.subheader("Trực quan hóa dữ liệu bất thường")
+    fig, ax = plt.subplots(figsize=(10, 6))
+    sample = df.sample(min(1000, len(df)), random_state=42)
+    sns.scatterplot(data=sample, x=features[0], y=features[1], hue='anomaly', palette='coolwarm', ax=ax)
+    ax.set_title("Phân tích điểm bất thường trong giao dịch")
+    ax.legend(title='anomaly')
+    st.pyplot(fig)
